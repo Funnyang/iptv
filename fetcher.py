@@ -61,7 +61,7 @@ def gen_m3u_file(channels, channel_info):
     # EXTINF:-1 tvg-id="1" tvg-name="CCTV1" tvg-logo="http://epg.51zmt.top:8000/tb1/CCTV/CCTV1.png" group-title="央视",﻿CCTV-1高清
     # http://192.168.100.1:4022/udp/239.93.0.184:5140
     f = open('chengdu_iptv.m3u', 'w')
-    f.write('# EXTM3U\n')
+    f.write('#EXTM3U\n')
     for channel in channels:
         if '画中画' in channel['name']:
             continue
@@ -82,7 +82,7 @@ def gen_m3u_file(channels, channel_info):
         tvg_logo = get_tvg_logo(tvg_name, channel_info)
         tvg_id = get_tvg_id(tvg_name, channel_info)
         group_title = get_group_title(tvg_name, channel_info)
-        f.write(f"# EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" group-title=\"{group_title}\",{channel['name']}\n")
+        f.write(f"#EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" group-title=\"{group_title}\",{channel['name']}\n")
         f.write(f"http://192.168.100.1:4022/udp/{channel['multicast_addr']}\n")
     f.close()
 
