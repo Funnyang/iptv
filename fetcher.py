@@ -1,4 +1,5 @@
 from requests_html import HTMLSession
+from urllib.parse import urljoin
 import json
 session = HTMLSession()
 
@@ -40,6 +41,7 @@ def get_channel_info():
         if len(tds) == 0:
             continue
         tvg_logo = tds[0].find('a', first=True).attrs['href']
+        tvg_logo = urljoin(url, tvg_logo)
         tvg_name = tds[2].text
         tvg_id = tds[3].text
         group_title = tds[4].text
@@ -62,12 +64,17 @@ def gen_m3u_file(channels, channel_info):
     # http://192.168.100.1:4022/udp/239.93.0.184:5140
     f = open('chengdu_iptv.m3u', 'w')
     f.write('#EXTM3U\n')
+    exist_channels = set()
     for channel in channels:
         if '画中画' in channel['name']:
             continue
         if '单音轨' in channel['name']:
             continue
         if '体验' in channel['name']:
+            continue
+        if '游戏' in channel['name'] or '收视' in channel['name']:
+            continue
+        if '股评' in channel['name'] or '导视' in channel['name'] or '精彩推荐' in channel['name']:
             continue
         if channel['name'].isdigit():
             continue
@@ -78,22 +85,52 @@ def gen_m3u_file(channels, channel_info):
         # 存在高清版，跳过
         if channel['name'] in exist_name_FHD:
             continue
+        # 存在重复的，跳过
+        if channel['name'] in exist_channels:
+            continue
         tvg_name = get_tvg_name(channel['name'])
         tvg_logo = get_tvg_logo(tvg_name, channel_info)
         tvg_id = get_tvg_id(tvg_name, channel_info)
         group_title = get_group_title(tvg_name, channel_info)
         f.write(f"#EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" group-title=\"{group_title}\",{channel['name']}\n")
         f.write(f"http://192.168.100.1:4022/udp/{channel['multicast_addr']}\n")
+        exist_channels.add(channel['name'])
     f.close()
+
+    with open('chengdu_iptv.m3u', 'r') as f:
+        with open('chengdu_iptv_rtp.m3u', 'w') as f_rtp:
+            f_rtp.write(f.read().replace('http://192.168.100.1:4022/udp/', 'rtp://'))
 
 
 def get_group_title(name, channel_info):
-    if name in channel_info:
-        return channel_info[name]['group_title']
     if '卫视' in name:
         return '卫视'
-    if '四川' in name or 'SCTV' in name:
+    if '四川' in name or 'SCTV' in name.upper() or 'CDTV' in name.upper():
         return '四川'
+    if 'CETV' in name or '教育' in name:
+        return '教育'
+    if '卡通' in name or '少儿' in name or '宝宝' in name or '动画' in name or '动漫' in name or name in ['优漫卡通']:
+        return '少儿'
+    if '新闻' in name:
+        return '新闻'
+    if '电影' in name or '影院' in name or '院线' in name or '大片' in name:
+        return '电影'
+    if '剧场' in name or '港剧' in name:
+        return '剧场'
+    if '体育' in name or '体娱' in name:
+        return '体育'
+    if '生活' in name or '时尚' in name:
+        return '生活时尚'
+    if '综艺' in name:
+        return '综艺'
+    if '音乐' in name:
+        return '音乐'
+    if '戏曲' in name:
+        return '戏曲'
+    if '4K' in name:
+        return '4K'
+    if name in channel_info:
+        return channel_info[name]['group_title']
     return '未分类'
 
 
