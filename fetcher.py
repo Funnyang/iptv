@@ -111,22 +111,22 @@ def get_group_title(name, channel_info):
         return '教育'
     if '卡通' in name or '少儿' in name or '宝宝' in name or '动画' in name or '动漫' in name or name in ['优漫卡通']:
         return '少儿'
-    if '新闻' in name:
+    if '新闻' in name or '纪实' in name:
         return '新闻'
     if '电影' in name or '影院' in name or '院线' in name or '大片' in name:
-        return '电影'
+        return '影视'
     if '剧场' in name or '港剧' in name:
-        return '剧场'
+        return '影视'
     if '体育' in name or '体娱' in name:
         return '体育'
     if '生活' in name or '时尚' in name:
         return '生活时尚'
     if '综艺' in name:
-        return '综艺'
+        return '娱乐'
     if '音乐' in name:
-        return '音乐'
+        return '娱乐'
     if '戏曲' in name:
-        return '戏曲'
+        return '娱乐'
     if '4K' in name:
         return '4K'
     if name in channel_info:
