@@ -18,7 +18,8 @@ def fetch_chengdu_iptv():
             'multicast_addr': tds[2].text,
             'res': get_text(tds[5].find('em.res', first=True)),
             'fps': get_text(tds[5].find('em.fps', first=True)),
-            'rate': get_text(tds[5].find('em.rate', first=True))
+            'rate': get_text(tds[5].find('em.rate', first=True)),
+            'catch_source': get_text(tds[6])
         }
         channels.append(channel)
     return channels
@@ -63,7 +64,7 @@ def gen_m3u_file(channels, channel_info):
     # EXTINF:-1 tvg-id="1" tvg-name="CCTV1" tvg-logo="http://epg.51zmt.top:8000/tb1/CCTV/CCTV1.png" group-title="央视",﻿CCTV-1高清
     # http://192.168.100.1:4022/udp/239.93.0.184:5140
     f = open('chengdu_iptv.m3u', 'w')
-    f.write('#EXTM3U\n')
+    f.write('#EXTM3U name="成都电信IPTV" x-tvg-url="http://epg.51zmt.top:8000/e.xml.gz"\n')
     exist_channels = set()
     for channel in channels:
         if '画中画' in channel['name']:
@@ -92,14 +93,18 @@ def gen_m3u_file(channels, channel_info):
         tvg_logo = get_tvg_logo(tvg_name, channel_info)
         tvg_id = get_tvg_id(tvg_name, channel_info)
         group_title = get_group_title(tvg_name, channel_info)
-        f.write(f"#EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" group-title=\"{group_title}\",{channel['name']}\n")
+
+        catch_source=channel['catch_source']
+        catch_source="http://192.168.100.1:4022/"+catch_source.replace("://", "/")
+        f.write("#KODIPROP:inputstream=inputstream.ffmpegdirect\n")
+        f.write(f"#EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" catchup=\"append\" catchup-days=\"5\" catchup-source=\"{catch_source}?playseek={{utc:YmdHMS}}-{{utcend:YmdHMS}}\" group-title=\"{group_title}\",{channel['name']}\n")
         f.write(f"http://192.168.100.1:4022/udp/{channel['multicast_addr']}\n")
         exist_channels.add(channel['name'])
     f.close()
 
     with open('chengdu_iptv.m3u', 'r') as f:
         with open('chengdu_iptv_rtp.m3u', 'w') as f_rtp:
-            f_rtp.write(f.read().replace('http://192.168.100.1:4022/udp/', 'rtp://'))
+            f_rtp.write(f.read().replace('http://192.168.100.1:4022/udp/', 'rtp://').replace("http://192.168.100.1:4022/rtsp/", "rtsp://"))
 
 
 def get_group_title(name, channel_info):
@@ -119,19 +124,9 @@ def get_group_title(name, channel_info):
         return '影视'
     if '体育' in name or '体娱' in name:
         return '体育'
-    if '生活' in name or '时尚' in name:
-        return '生活时尚'
-    if '综艺' in name:
-        return '娱乐'
-    if '音乐' in name:
-        return '娱乐'
-    if '戏曲' in name:
-        return '娱乐'
-    if '4K' in name:
-        return '4K'
     if name in channel_info:
         return channel_info[name]['group_title']
-    return '未分类'
+    return '其他'
 
 
 def get_tvg_logo(name, channel_info):
