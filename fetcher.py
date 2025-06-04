@@ -97,7 +97,7 @@ def gen_m3u_file(channels, channel_info):
         catch_source=channel['catch_source']
         catch_source="http://192.168.100.1:4022/"+catch_source.replace("://", "/")
         f.write("#KODIPROP:inputstream=inputstream.ffmpegdirect\n")
-        f.write(f"#EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" catchup=\"append\" catchup-days=\"5\" catchup-source=\"{catch_source}?playseek={{utc:YmdHMS}}-{{utcend:YmdHMS}}\" group-title=\"{group_title}\",{channel['name']}\n")
+        f.write(f"#EXTINF:-1 tvg-id=\"{tvg_id}\" tvg-name=\"{tvg_name}\" tvg-logo=\"{tvg_logo}\" catchup=\"default\" catchup-days=\"5\" catchup-source=\"{catch_source}?playseek={{utc:YmdHMS}}-{{utcend:YmdHMS}}\" group-title=\"{group_title}\",{channel['name']}\n")
         f.write(f"http://192.168.100.1:4022/udp/{channel['multicast_addr']}\n")
         exist_channels.add(channel['name'])
     f.close()
